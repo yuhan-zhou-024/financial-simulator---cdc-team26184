@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cafe de Coral - Financial Impact Simulator</title>
+
+<style>
+  :root {
+    --ink: #171717;
+    --muted: #63666a;
+    --subtle: #8a8f98;
+    --line: #e3e6ea;
+    --paper: #ffffff;
+    --wash: #f5f7fa;
+    --wash-strong: #eef2f6;
+    --black: #171717;
+    --red: #d84a3a;
+    --amber: #e7a83b;
+    --teal: #2f9d8f;
+    --blue: #466db4;
+    --green: #5f9f4a;
+    --shadow: 0 12px 34px rgba(19, 25, 32, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--wash);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      linear-gradient(180deg, #ffffff 0, #f6f7f9 330px),
+      var(--wash);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  .container {
+    width: min(1450px, 100%);
+    margin: 0 auto;
+    padding: 32px 28px 72px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+
+  .brand-block {
+    min-width: 0;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 9px;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .eyebrow::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    content: "";
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 4vw, 38px);
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  h2,
+  h3,
+  p {
+    margin-top: 0;
+  }
+
+  .subtitle {
+    max-width: 830px;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .reset-button {
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 8px;
+    background: var(--black);
+    color: white;
+    padding: 11px 18px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .reset-button:hover {
+    opacity: 0.86;
+  }
+
+  .reset-button:active {
+    transform: translateY(1px);
+  }
+
+  .dashboard-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .section {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .section-number {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--black);
+    color: white;
+    font-weight: 800;
+  }
+
+  .section-title {
+    font-size: 21px;
+    font-weight: 800;
+  }
+
+  .section-description {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 3px;
+    line-height: 1.45;
+  }
+
+  .investment-total {
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 290px);
+    align-items: end;
+    gap: 22px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--wash);
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .input-group label,
+  .investment-total label {
+    display: block;
+    margin-bottom: 7px;
+    color: #404348;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .input-hint {
+    margin-top: 6px;
+    color: var(--subtle);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #d4d9df;
+    border-radius: 8px;
+    background: white;
+    color: var(--ink);
+    font-size: 15px;
+    outline: none;
+    transition: border 140ms ease, box-shadow 140ms ease;
+  }
+
+  input[type="number"]:focus {
+    border-color: #2f6fbd;
+    box-shadow: 0 0 0 3px rgba(47, 111, 189, 0.12);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--strategy-color, var(--black));
+  }
+
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .strategy-card {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: #fff;
+  }
+
+  .strategy-card[data-strategy="partyPlanner"] {
+    --strategy-color: var(--red);
+  }
+
+  .strategy-card[data-strategy="pokeStation"] {
+    --strategy-color: var(--amber);
+  }
+
+  .strategy-card[data-strategy="eatcdcAppFunction"] {
+    --strategy-color: var(--teal);
+  }
+
+  .strategy-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .strategy-heading h3 {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .strategy-description {
+    min-height: 64px;
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .allocation-value {
+    flex: 0 0 auto;
+    min-width: 56px;
+    text-align: right;
+    color: var(--strategy-color);
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .assumption-title {
+    margin: 18px 0 12px;
+    color: #30343a;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .metric-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .mini-metric {
+    min-width: 0;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--wash);
+  }
+
+  .mini-metric span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .mini-metric strong {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .allocation-summary {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) 1fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  .donut-panel,
+  .chart-panel {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .donut-panel {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 18px;
+  }
+
+  .panel-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .donut-wrap {
+    position: relative;
+    min-height: 300px;
+    display: grid;
+    place-items: center;
+  }
+
+  .donut-wrap canvas {
+    width: min(270px, 100%);
+    max-width: 100%;
+    aspect-ratio: 1;
+  }
+
+  .donut-center {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .donut-center strong {
+    display: block;
+    font-size: 25px;
+  }
+
+  .donut-center span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .legend {
+    display: grid;
+    gap: 10px;
+  }
+
+  .legend-row {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .summary-panel {
+    min-width: 0;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .kpi {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 17px;
+    background: white;
+  }
+
+  .kpi-label {
+    min-height: 34px;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .kpi-value {
+    overflow-wrap: anywhere;
+    font-size: clamp(22px, 2.4vw, 29px);
+    line-height: 1;
+    font-weight: 850;
+  }
+
+  .kpi-value.good {
+    color: var(--green);
+  }
+
+  .kpi-value.warn {
+    color: var(--amber);
+  }
+
+  .kpi-value.bad {
+    color: var(--red);
+  }
+
+  .kpi-note {
+    margin-top: 8px;
+    color: var(--subtle);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .chart-panel {
+    padding: 18px;
+  }
+
+  .chart-container {
+    height: 390px;
+    min-height: 280px;
+  }
+
+  .chart-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .financial-table th,
+  .financial-table td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #eceff2;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .financial-table th:first-child,
+  .financial-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: white;
+    text-align: left;
+  }
+
+  .financial-table th {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .financial-table td {
+    font-size: 14px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .table-wrap .financial-table {
+    margin-top: 0;
+  }
+
+  .positive {
+    color: var(--green);
+    font-weight: 800;
+  }
+
+  .negative {
+    color: var(--red);
+    font-weight: 800;
+  }
+
+  .note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid #eadca8;
+    border-radius: 8px;
+    background: #fff8e7;
+    color: #765b16;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 1180px) {
+    .allocation-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .donut-panel {
+      grid-template-columns: minmax(230px, 330px) 1fr;
+      grid-template-rows: auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .panel-title {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 1020px) {
+    .strategy-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .container {
+      padding: 22px 14px 54px;
+    }
+
+    .top-bar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .reset-button {
+      width: 100%;
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section-header {
+      align-items: flex-start;
+    }
+
+    .investment-total,
+    .strategy-grid,
+    .donut-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .strategy-description {
+      min-height: 0;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .financial-table th,
+    .financial-table td {
+      padding: 12px 10px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div class="brand-block">
+        <p class="eyebrow">Cafe de Coral</p>
+        <h1>Financial Impact Simulator</h1>
+        <p class="subtitle">
+          Model the 24-month financial impact of three Cafe de Coral strategic initiatives: Party Planner, Poke Station, and EatCDC App Function.
+        </p>
+      </div>
+      <button class="reset-button" type="button" id="resetButton">Reset assumptions</button>
+    </div>
+
+    <div class="dashboard-shell">
+      <section class="section" aria-labelledby="section-investment">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <div>
+            <div class="section-title" id="section-investment">Initial Investment</div>
+            <div class="section-description">Set the total initial investment and allocate it across the three Cafe de Coral initiatives.</div>
+          </div>
+        </div>
+
+        <div class="investment-total">
+          <div>
+            <label for="totalInvestment">Total Initial Investment (HK$)</label>
+            <input id="totalInvestment" type="number" min="0" step="50000" value="2450000" />
+            <div class="input-hint">Default: HK$2.45M. Strategy investment = total initial investment × allocation percentage.</div>
+          </div>
+          <div>
+            <label>Investment Horizon</label>
+            <input type="number" value="24" disabled />
+            <div class="input-hint">Months</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-strategies">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <div>
+            <div class="section-title" id="section-strategies">Investment Allocation & Operating Assumptions</div>
+            <div class="section-description">Allocation sliders always total 100%. Operating assumptions drive monthly cash-flow calculations.</div>
+          </div>
+        </div>
+
+        <div class="strategy-grid">
+          <article class="strategy-card" data-strategy="partyPlanner">
+            <div class="strategy-heading">
+              <h3>Party Planner</h3>
+              <div class="allocation-value" data-allocation-label="partyPlanner">30%</div>
+            </div>
+            <p class="strategy-description">Gen Z gathering and class gathering package for group dining occasions.</p>
+            <div class="input-group">
+              <label for="partyPlannerAllocation">Investment Allocation</label>
+              <input id="partyPlannerAllocation" data-allocation="partyPlanner" type="range" min="0" max="100" step="1" value="30" />
+            </div>
+
+            <div class="assumption-title">Operating Assumptions</div>
+            <div class="input-group">
+              <label for="partyPlannerSellingPrice">Selling Price / Party (HK$)</label>
+              <input id="partyPlannerSellingPrice" data-strategy-input="partyPlanner" data-field="sellingPrice" type="number" min="0" step="100" value="5800" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerFoodCost">Food Cost / Party (HK$)</label>
+              <input id="partyPlannerFoodCost" data-strategy-input="partyPlanner" data-field="foodCost" type="number" min="0" step="50" value="2600" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerDecorationCost">Decoration & Games / Party (HK$)</label>
+              <input id="partyPlannerDecorationCost" data-strategy-input="partyPlanner" data-field="decorationCost" type="number" min="0" step="50" value="800" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerLaborCost">Labor Cost / Month (HK$)</label>
+              <input id="partyPlannerLaborCost" data-strategy-input="partyPlanner" data-field="laborCost" type="number" min="0" step="1000" value="35000" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerMarketingCost">Marketing Cost / Month (HK$)</label>
+              <input id="partyPlannerMarketingCost" data-strategy-input="partyPlanner" data-field="marketingCost" type="number" min="0" step="1000" value="20000" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerMonthlyVolume">Monthly Parties</label>
+              <input id="partyPlannerMonthlyVolume" data-strategy-input="partyPlanner" data-field="monthlyVolume" type="number" min="0" step="1" value="35" />
+            </div>
+            <div class="input-group">
+              <label for="partyPlannerGrowthRate">Monthly Growth Rate (%)</label>
+              <input id="partyPlannerGrowthRate" data-strategy-input="partyPlanner" data-field="growthRate" type="number" min="-100" step="0.1" value="4" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Investment</span>
+                <strong data-investment="partyPlanner">HK$735k</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Month 1 Net Cash Flow</span>
+                <strong data-month-one="partyPlanner">HK$29k</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="strategy-card" data-strategy="pokeStation">
+            <div class="strategy-heading">
+              <h3>Poke Station</h3>
+              <div class="allocation-value" data-allocation-label="pokeStation">40%</div>
+            </div>
+            <p class="strategy-description">Physical poke station beside Cafe de Coral for Gen Z health and fitness needs, with AI-assisted nutrition customization.</p>
+            <div class="input-group">
+              <label for="pokeStationAllocation">Investment Allocation</label>
+              <input id="pokeStationAllocation" data-allocation="pokeStation" type="range" min="0" max="100" step="1" value="40" />
+            </div>
+
+            <div class="assumption-title">Operating Assumptions</div>
+            <div class="input-group">
+              <label for="pokeStationSellingPrice">Selling Price / Order (HK$)</label>
+              <input id="pokeStationSellingPrice" data-strategy-input="pokeStation" data-field="sellingPrice" type="number" min="0" step="1" value="68" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationIngredientCost">Ingredient Cost / Order (HK$)</label>
+              <input id="pokeStationIngredientCost" data-strategy-input="pokeStation" data-field="ingredientCost" type="number" min="0" step="1" value="32" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationPackagingCost">Packaging Cost / Order (HK$)</label>
+              <input id="pokeStationPackagingCost" data-strategy-input="pokeStation" data-field="packagingCost" type="number" min="0" step="1" value="5" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationLaborCost">Labor Cost / Month (HK$)</label>
+              <input id="pokeStationLaborCost" data-strategy-input="pokeStation" data-field="laborCost" type="number" min="0" step="1000" value="80000" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationMarketingCost">Marketing Cost / Month (HK$)</label>
+              <input id="pokeStationMarketingCost" data-strategy-input="pokeStation" data-field="marketingCost" type="number" min="0" step="1000" value="25000" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationMonthlyVolume">Monthly Orders</label>
+              <input id="pokeStationMonthlyVolume" data-strategy-input="pokeStation" data-field="monthlyVolume" type="number" min="0" step="100" value="5000" />
+            </div>
+            <div class="input-group">
+              <label for="pokeStationGrowthRate">Monthly Growth Rate (%)</label>
+              <input id="pokeStationGrowthRate" data-strategy-input="pokeStation" data-field="growthRate" type="number" min="-100" step="0.1" value="3" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Investment</span>
+                <strong data-investment="pokeStation">HK$980k</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Month 1 Net Cash Flow</span>
+                <strong data-month-one="pokeStation">HK$50k</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="strategy-card" data-strategy="eatcdcAppFunction">
+            <div class="strategy-heading">
+              <h3>EatCDC App Function</h3>
+              <div class="allocation-value" data-allocation-label="eatcdcAppFunction">30%</div>
+            </div>
+            <p class="strategy-description">AI pet and interactive points feature inside the EatCDC app that encourages engagement and directs users toward Cafe de Coral ordering.</p>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionAllocation">Investment Allocation</label>
+              <input id="eatcdcAppFunctionAllocation" data-allocation="eatcdcAppFunction" type="range" min="0" max="100" step="1" value="30" />
+            </div>
+
+            <div class="assumption-title">Operating Assumptions</div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionRevenuePerOrder">Incremental Revenue / Order (HK$)</label>
+              <input id="eatcdcAppFunctionRevenuePerOrder" data-strategy-input="eatcdcAppFunction" data-field="incrementalRevenuePerOrder" type="number" min="0" step="1" value="45" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionVariableCost">Variable Cost / Order (HK$)</label>
+              <input id="eatcdcAppFunctionVariableCost" data-strategy-input="eatcdcAppFunction" data-field="variableCostPerOrder" type="number" min="0" step="1" value="22" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionTechCost">AI / Technology Cost / Month (HK$)</label>
+              <input id="eatcdcAppFunctionTechCost" data-strategy-input="eatcdcAppFunction" data-field="technologyCost" type="number" min="0" step="1000" value="50000" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionMaintenanceCost">Labor / Maintenance Cost / Month (HK$)</label>
+              <input id="eatcdcAppFunctionMaintenanceCost" data-strategy-input="eatcdcAppFunction" data-field="maintenanceCost" type="number" min="0" step="1000" value="30000" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionMarketingCost">Marketing Cost / Month (HK$)</label>
+              <input id="eatcdcAppFunctionMarketingCost" data-strategy-input="eatcdcAppFunction" data-field="marketingCost" type="number" min="0" step="1000" value="30000" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionMonthlyVolume">Monthly Incremental Orders</label>
+              <input id="eatcdcAppFunctionMonthlyVolume" data-strategy-input="eatcdcAppFunction" data-field="monthlyVolume" type="number" min="0" step="100" value="8000" />
+            </div>
+            <div class="input-group">
+              <label for="eatcdcAppFunctionGrowthRate">Monthly Growth Rate (%)</label>
+              <input id="eatcdcAppFunctionGrowthRate" data-strategy-input="eatcdcAppFunction" data-field="growthRate" type="number" min="-100" step="0.1" value="5" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Investment</span>
+                <strong data-investment="eatcdcAppFunction">HK$735k</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Month 1 Net Cash Flow</span>
+                <strong data-month-one="eatcdcAppFunction">HK$74k</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-results">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <div>
+            <div class="section-title" id="section-results">Financial Summary</div>
+            <div class="section-description">Break-even, payback, ROI, and cumulative cash flow update instantly when assumptions change.</div>
+          </div>
+        </div>
+
+        <div class="allocation-summary">
+          <aside class="donut-panel" aria-label="Allocation summary">
+            <h2 class="panel-title">Investment Allocation</h2>
+            <div class="donut-wrap">
+              <canvas id="donutChart" width="360" height="360" aria-label="Investment allocation donut chart"></canvas>
+              <div class="donut-center">
+                <strong id="donutTotal">HK$2.45M</strong>
+                <span>Total Initial Investment</span>
+              </div>
+            </div>
+            <div class="legend" id="allocationLegend"></div>
+          </aside>
+
+          <div class="summary-panel">
+            <div class="kpi-grid">
+              <div class="kpi">
+                <div class="kpi-label">Break-even Volume</div>
+                <div class="kpi-value" id="kpiBreakEven">0 / mo</div>
+                <div class="kpi-note" id="kpiBreakEvenNote">By strategy</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Payback Period</div>
+                <div class="kpi-value good" id="kpiPayback">0 mo</div>
+                <div class="kpi-note">Portfolio cumulative cash flow</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">ROI</div>
+                <div class="kpi-value good" id="kpiRoi">0%</div>
+                <div class="kpi-note">Based on 24-month net gain after initial investment</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">24-month Cumulative Cash Flow</div>
+                <div class="kpi-value good" id="kpiCumulative">HK$0</div>
+                <div class="kpi-note">After initial investment</div>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <h2 class="panel-title">24-month Cash Flow</h2>
+              <div class="chart-container">
+                <canvas id="cashFlowChart" width="900" height="420" aria-label="24-month cumulative cash-flow chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-table">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <div>
+            <div class="section-title" id="section-table">Financial Output</div>
+            <div class="section-description">Strategy-level and portfolio-level output over 24 months.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="financial-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Party Planner</th>
+                <th>Poke Station</th>
+                <th>EatCDC App Function</th>
+                <th>Portfolio Total</th>
+              </tr>
+            </thead>
+            <tbody id="financialTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          This simulator is an illustrative planning model for the Cafe de Coral proposal. Monthly cash flow deducts monthly operating costs; cumulative cash flow also deducts the allocated initial investment.
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  const MONTHS = 24;
+
+  const STRATEGIES = [
+    {
+      id: "partyPlanner",
+      label: "Party Planner",
+      shortLabel: "Party",
+      color: "#d84a3a",
+      volumeLabel: "parties",
+    },
+    {
+      id: "pokeStation",
+      label: "Poke Station",
+      shortLabel: "Station",
+      color: "#e7a83b",
+      volumeLabel: "orders",
+    },
+    {
+      id: "eatcdcAppFunction",
+      label: "EatCDC App Function",
+      shortLabel: "App",
+      color: "#2f9d8f",
+      volumeLabel: "orders",
+    },
+  ];
+
+  const DEFAULTS = {
+    totalInvestment: 2450000,
+    allocations: {
+      partyPlanner: 30,
+      pokeStation: 40,
+      eatcdcAppFunction: 30,
+    },
+    strategyInputs: {
+      partyPlanner: {
+        sellingPrice: 5800,
+        foodCost: 2600,
+        decorationCost: 800,
+        laborCost: 35000,
+        marketingCost: 20000,
+        monthlyVolume: 35,
+        growthRate: 4,
+      },
+      pokeStation: {
+        sellingPrice: 68,
+        ingredientCost: 32,
+        packagingCost: 5,
+        laborCost: 80000,
+        marketingCost: 25000,
+        monthlyVolume: 5000,
+        growthRate: 3,
+      },
+      eatcdcAppFunction: {
+        incrementalRevenuePerOrder: 45,
+        variableCostPerOrder: 22,
+        technologyCost: 50000,
+        maintenanceCost: 30000,
+        marketingCost: 30000,
+        monthlyVolume: 8000,
+        growthRate: 5,
+      },
+    },
+  };
+
+  const state = {
+    allocations: { ...DEFAULTS.allocations },
+  };
+
+  const currency = new Intl.NumberFormat("en-HK", {
+    maximumFractionDigits: 0,
+  });
+
+  const decimal = new Intl.NumberFormat("en-HK", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+
+  const whole = new Intl.NumberFormat("en-HK", {
+    maximumFractionDigits: 0,
+  });
+
+  const totalInvestmentInput = document.querySelector("#totalInvestment");
+  const donutCanvas = document.querySelector("#donutChart");
+  const cashFlowCanvas = document.querySelector("#cashFlowChart");
+
+  function readNumber(element) {
+    const value = Number(element?.value);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function getTotalInvestment() {
+    return Math.max(0, readNumber(totalInvestmentInput));
+  }
+
+  function getStrategyInput(strategyId, field) {
+    const element = document.querySelector(`[data-strategy-input="${strategyId}"][data-field="${field}"]`);
+    return readNumber(element);
+  }
+
+  function formatMoney(value) {
+    const sign = value < 0 ? "-" : "";
+    const absolute = Math.abs(value);
+    if (absolute >= 1000000) {
+      return `${sign}HK$${decimal.format(absolute / 1000000)}M`;
+    }
+    if (absolute >= 1000) {
+      return `${sign}HK$${whole.format(absolute / 1000)}k`;
+    }
+    return `${sign}HK$${whole.format(absolute)}`;
+  }
+
+  function formatFullMoney(value) {
+    const sign = value < 0 ? "-" : "";
+    return `${sign}HK$${currency.format(Math.abs(value))}`;
+  }
+
+  function formatPercent(value) {
+    return `${decimal.format(value)}%`;
+  }
+
+  function syncAllocationControls() {
+    STRATEGIES.forEach((strategy) => {
+      const value = Math.round(state.allocations[strategy.id]);
+      document.querySelector(`[data-allocation="${strategy.id}"]`).value = value;
+      document.querySelector(`[data-allocation-label="${strategy.id}"]`).textContent = `${value}%`;
+    });
+  }
+
+  function balanceAllocations(changedId, nextValue) {
+    const clampedValue = Math.max(0, Math.min(100, Math.round(nextValue)));
+    state.allocations[changedId] = clampedValue;
+
+    const otherIds = STRATEGIES
+      .map((strategy) => strategy.id)
+      .filter((id) => id !== changedId);
+    const remaining = 100 - clampedValue;
+    const currentOtherTotal = otherIds.reduce((sum, id) => sum + state.allocations[id], 0);
+
+    let assigned = 0;
+    otherIds.forEach((id, index) => {
+      const isLast = index === otherIds.length - 1;
+      let nextAllocation;
+      if (isLast) {
+        nextAllocation = remaining - assigned;
+      } else if (currentOtherTotal === 0) {
+        nextAllocation = Math.round(remaining / otherIds.length);
+      } else {
+        nextAllocation = Math.round((state.allocations[id] / currentOtherTotal) * remaining);
+      }
+      state.allocations[id] = Math.max(0, nextAllocation);
+      assigned += state.allocations[id];
+    });
+
+    normalizeAllocations(changedId);
+  }
+
+  function normalizeAllocations(preferredId) {
+    const total = STRATEGIES.reduce((sum, strategy) => sum + state.allocations[strategy.id], 0);
+    if (total === 100) return;
+
+    const target = STRATEGIES.find((strategy) => strategy.id !== preferredId) || STRATEGIES[0];
+    state.allocations[target.id] += 100 - total;
+  }
+
+  function calculateMonthVolume(baseVolume, growthRate, monthIndex) {
+    return Math.max(0, baseVolume) * Math.pow(1 + growthRate / 100, monthIndex);
+  }
+
+  function calculateStrategy(strategy, investmentAmount) {
+    if (strategy.id === "partyPlanner") {
+      return calculatePartyPlanner(strategy, investmentAmount);
+    }
+    if (strategy.id === "pokeStation") {
+      return calculatePokeStation(strategy, investmentAmount);
+    }
+    return calculateEatcdcAppFunction(strategy, investmentAmount);
+  }
+
+  function calculatePartyPlanner(strategy, investmentAmount) {
+    const sellingPrice = getStrategyInput(strategy.id, "sellingPrice");
+    const foodCost = getStrategyInput(strategy.id, "foodCost");
+    const decorationCost = getStrategyInput(strategy.id, "decorationCost");
+    const laborCost = getStrategyInput(strategy.id, "laborCost");
+    const marketingCost = getStrategyInput(strategy.id, "marketingCost");
+    const monthlyVolume = getStrategyInput(strategy.id, "monthlyVolume");
+    const growthRate = getStrategyInput(strategy.id, "growthRate");
+    const variableCostPerUnit = foodCost + decorationCost;
+    const contributionPerUnit = sellingPrice - variableCostPerUnit;
+    const fixedCost = laborCost + marketingCost;
+    const monthly = buildMonthlySeries({
+      sellingPrice,
+      variableCostPerUnit,
+      fixedCost,
+      monthlyVolume,
+      growthRate,
+    });
+
+    return summarizeStrategy({
+      strategy,
+      investmentAmount,
+      monthly,
+      contributionPerUnit,
+      fixedCost,
+    });
+  }
+
+  function calculatePokeStation(strategy, investmentAmount) {
+    const sellingPrice = getStrategyInput(strategy.id, "sellingPrice");
+    const ingredientCost = getStrategyInput(strategy.id, "ingredientCost");
+    const packagingCost = getStrategyInput(strategy.id, "packagingCost");
+    const laborCost = getStrategyInput(strategy.id, "laborCost");
+    const marketingCost = getStrategyInput(strategy.id, "marketingCost");
+    const monthlyVolume = getStrategyInput(strategy.id, "monthlyVolume");
+    const growthRate = getStrategyInput(strategy.id, "growthRate");
+    const variableCostPerUnit = ingredientCost + packagingCost;
+    const contributionPerUnit = sellingPrice - variableCostPerUnit;
+    const fixedCost = laborCost + marketingCost;
+    const monthly = buildMonthlySeries({
+      sellingPrice,
+      variableCostPerUnit,
+      fixedCost,
+      monthlyVolume,
+      growthRate,
+    });
+
+    return summarizeStrategy({
+      strategy,
+      investmentAmount,
+      monthly,
+      contributionPerUnit,
+      fixedCost,
+    });
+  }
+
+  function calculateEatcdcAppFunction(strategy, investmentAmount) {
+    const sellingPrice = getStrategyInput(strategy.id, "incrementalRevenuePerOrder");
+    const variableCostPerUnit = getStrategyInput(strategy.id, "variableCostPerOrder");
+    const technologyCost = getStrategyInput(strategy.id, "technologyCost");
+    const maintenanceCost = getStrategyInput(strategy.id, "maintenanceCost");
+    const marketingCost = getStrategyInput(strategy.id, "marketingCost");
+    const monthlyVolume = getStrategyInput(strategy.id, "monthlyVolume");
+    const growthRate = getStrategyInput(strategy.id, "growthRate");
+    const contributionPerUnit = sellingPrice - variableCostPerUnit;
+    const fixedCost = technologyCost + maintenanceCost + marketingCost;
+    const monthly = buildMonthlySeries({
+      sellingPrice,
+      variableCostPerUnit,
+      fixedCost,
+      monthlyVolume,
+      growthRate,
+    });
+
+    return summarizeStrategy({
+      strategy,
+      investmentAmount,
+      monthly,
+      contributionPerUnit,
+      fixedCost,
+    });
+  }
+
+  function buildMonthlySeries({ sellingPrice, variableCostPerUnit, fixedCost, monthlyVolume, growthRate }) {
+    return Array.from({ length: MONTHS }, (_, index) => {
+      const volume = calculateMonthVolume(monthlyVolume, growthRate, index);
+      const revenue = sellingPrice * volume;
+      const variableCost = variableCostPerUnit * volume;
+      const netCashFlow = revenue - variableCost - fixedCost;
+
+      return {
+        month: index + 1,
+        volume,
+        revenue,
+        variableCost,
+        fixedCost,
+        netCashFlow,
+      };
+    });
+  }
+
+  function summarizeStrategy({ strategy, investmentAmount, monthly, contributionPerUnit, fixedCost }) {
+    let runningCashFlow = -investmentAmount;
+    const cumulative = monthly.map((item) => {
+      runningCashFlow += item.netCashFlow;
+      return runningCashFlow;
+    });
+
+    const operatingCashFlow = monthly.reduce((sum, item) => sum + item.netCashFlow, 0);
+    const cumulativeCashFlow = operatingCashFlow - investmentAmount;
+    const roi = investmentAmount === 0 ? 0 : (cumulativeCashFlow / investmentAmount) * 100;
+    const breakEvenVolume = contributionPerUnit <= 0 ? Infinity : fixedCost / contributionPerUnit;
+    const payback = calculatePayback(investmentAmount, monthly.map((item) => item.netCashFlow));
+
+    return {
+      ...strategy,
+      investmentAmount,
+      contributionPerUnit,
+      fixedCost,
+      breakEvenVolume,
+      monthly,
+      cumulative,
+      operatingCashFlow,
+      cumulativeCashFlow,
+      roi,
+      payback,
+    };
+  }
+
+  function calculatePayback(investmentAmount, monthlyCashFlows) {
+    if (investmentAmount <= 0) return 0;
+    let cumulative = -investmentAmount;
+    for (let index = 0; index < monthlyCashFlows.length; index += 1) {
+      const start = cumulative;
+      cumulative += monthlyCashFlows[index];
+      if (cumulative >= 0) {
+        const monthCashFlow = monthlyCashFlows[index];
+        if (monthCashFlow <= 0) return index + 1;
+        const partialMonth = Math.max(0, Math.min(1, -start / monthCashFlow));
+        return index + partialMonth + 1;
+      }
+    }
+    return null;
+  }
+
+  function calculateModel() {
+    const totalInvestment = getTotalInvestment();
+    const strategies = STRATEGIES.map((strategy) => {
+      const investmentAmount = totalInvestment * (state.allocations[strategy.id] / 100);
+      return calculateStrategy(strategy, investmentAmount);
+    });
+
+    const portfolioMonthly = Array.from({ length: MONTHS }, (_, index) => {
+      const netCashFlow = strategies.reduce((sum, strategy) => sum + strategy.monthly[index].netCashFlow, 0);
+      const revenue = strategies.reduce((sum, strategy) => sum + strategy.monthly[index].revenue, 0);
+      const variableCost = strategies.reduce((sum, strategy) => sum + strategy.monthly[index].variableCost, 0);
+      const fixedCost = strategies.reduce((sum, strategy) => sum + strategy.monthly[index].fixedCost, 0);
+      return {
+        month: index + 1,
+        netCashFlow,
+        revenue,
+        variableCost,
+        fixedCost,
+      };
+    });
+
+    let runningPortfolioCashFlow = -totalInvestment;
+    const portfolioCumulative = portfolioMonthly.map((item) => {
+      runningPortfolioCashFlow += item.netCashFlow;
+      return runningPortfolioCashFlow;
+    });
+
+    const operatingCashFlow = portfolioMonthly.reduce((sum, item) => sum + item.netCashFlow, 0);
+    const cumulativeCashFlow = operatingCashFlow - totalInvestment;
+    const roi = totalInvestment === 0 ? 0 : (cumulativeCashFlow / totalInvestment) * 100;
+    const payback = calculatePayback(totalInvestment, portfolioMonthly.map((item) => item.netCashFlow));
+    const totalFixedCostMonthOne = strategies.reduce((sum, strategy) => sum + strategy.monthly[0].fixedCost, 0);
+    const totalContributionMonthOne = strategies.reduce((sum, strategy) => {
+      return sum + strategy.contributionPerUnit * strategy.monthly[0].volume;
+    }, 0);
+    const totalVolumeMonthOne = strategies.reduce((sum, strategy) => sum + strategy.monthly[0].volume, 0);
+    const weightedContribution = totalVolumeMonthOne === 0 ? 0 : totalContributionMonthOne / totalVolumeMonthOne;
+    const portfolioBreakEvenVolume = weightedContribution <= 0 ? Infinity : totalFixedCostMonthOne / weightedContribution;
+
+    return {
+      totalInvestment,
+      strategies,
+      portfolio: {
+        label: "Portfolio Total",
+        color: "#466db4",
+        monthly: portfolioMonthly,
+        cumulative: portfolioCumulative,
+        operatingCashFlow,
+        cumulativeCashFlow,
+        roi,
+        payback,
+        breakEvenVolume: portfolioBreakEvenVolume,
+      },
+    };
+  }
+
+  function updateStrategyMetrics(model) {
+    model.strategies.forEach((strategy) => {
+      document.querySelector(`[data-investment="${strategy.id}"]`).textContent = formatMoney(strategy.investmentAmount);
+      document.querySelector(`[data-month-one="${strategy.id}"]`).textContent = formatMoney(strategy.monthly[0].netCashFlow);
+    });
+  }
+
+  function updateKpis(model) {
+    const portfolio = model.portfolio;
+    const breakEvenText = Number.isFinite(portfolio.breakEvenVolume)
+      ? `${whole.format(Math.ceil(portfolio.breakEvenVolume))} / mo`
+      : "No break-even";
+    const breakEvenNote = model.strategies
+      .map((strategy) => {
+        const value = Number.isFinite(strategy.breakEvenVolume)
+          ? whole.format(Math.ceil(strategy.breakEvenVolume))
+          : "n/a";
+        return `${strategy.shortLabel}: ${value} ${strategy.volumeLabel}`;
+      })
+      .join(" | ");
+
+    document.querySelector("#kpiBreakEven").textContent = breakEvenText;
+    document.querySelector("#kpiBreakEvenNote").textContent = breakEvenNote;
+
+    document.querySelector("#kpiPayback").textContent = portfolio.payback === null
+      ? "Beyond 24 mo"
+      : `${decimal.format(portfolio.payback)} mo`;
+
+    const roiElement = document.querySelector("#kpiRoi");
+    roiElement.textContent = formatPercent(portfolio.roi);
+    roiElement.classList.toggle("good", portfolio.roi >= 0);
+    roiElement.classList.toggle("bad", portfolio.roi < 0);
+
+    const cumulativeElement = document.querySelector("#kpiCumulative");
+    cumulativeElement.textContent = formatMoney(portfolio.cumulativeCashFlow);
+    cumulativeElement.classList.toggle("good", portfolio.cumulativeCashFlow >= 0);
+    cumulativeElement.classList.toggle("bad", portfolio.cumulativeCashFlow < 0);
+
+    const paybackElement = document.querySelector("#kpiPayback");
+    paybackElement.classList.toggle("good", portfolio.payback !== null);
+    paybackElement.classList.toggle("warn", portfolio.payback === null);
+  }
+
+  function updateTable(model) {
+    const strategyCells = (getter) => [
+      ...model.strategies.map((strategy) => getter(strategy)),
+      getter(model.portfolio),
+    ];
+
+    const rows = [
+      ["Initial investment", ...model.strategies.map((strategy) => formatFullMoney(strategy.investmentAmount)), formatFullMoney(model.totalInvestment)],
+      ["Month 1 net cash flow", ...strategyCells((item) => valueCell(item.monthly[0].netCashFlow))],
+      ["Month 12 net cash flow", ...strategyCells((item) => valueCell(item.monthly[11].netCashFlow))],
+      ["Month 24 net cash flow", ...strategyCells((item) => valueCell(item.monthly[23].netCashFlow))],
+      ["24-month operating cash flow", ...strategyCells((item) => valueCell(item.operatingCashFlow))],
+      ["24-month cumulative cash flow", ...strategyCells((item) => valueCell(item.cumulativeCashFlow))],
+      ["Payback period", ...strategyCells((item) => item.payback === null ? "Beyond 24 mo" : `${decimal.format(item.payback)} mo`)],
+      ["ROI", ...strategyCells((item) => valuePercent(item.roi))],
+    ];
+
+    document.querySelector("#financialTableBody").innerHTML = rows.map(([label, ...values]) => `
+      <tr>
+        <td>${label}</td>
+        ${values.map((value) => `<td>${value}</td>`).join("")}
+      </tr>
+    `).join("");
+  }
+
+  function valueCell(value) {
+    const className = value < 0 ? "negative" : "positive";
+    return `<span class="${className}">${formatFullMoney(value)}</span>`;
+  }
+
+  function valuePercent(value) {
+    const className = value < 0 ? "negative" : "positive";
+    return `<span class="${className}">${formatPercent(value)}</span>`;
+  }
+
+  function drawDonut(model) {
+    const ctx = donutCanvas.getContext("2d");
+    const rect = donutCanvas.getBoundingClientRect();
+    const size = Math.max(260, Math.floor(rect.width || 320));
+    const dpr = window.devicePixelRatio || 1;
+    donutCanvas.width = size * dpr;
+    donutCanvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+
+    const center = size / 2;
+    const radius = size * 0.39;
+    const lineWidth = size * 0.15;
+    let start = -Math.PI / 2;
+
+    model.strategies.forEach((strategy) => {
+      const portion = state.allocations[strategy.id] / 100;
+      const end = start + portion * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(center, center, radius, start, end);
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "butt";
+      ctx.strokeStyle = strategy.color;
+      ctx.stroke();
+      start = end;
+    });
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#e7eaef";
+    ctx.stroke();
+
+    document.querySelector("#donutTotal").textContent = formatMoney(model.totalInvestment);
+    document.querySelector("#allocationLegend").innerHTML = model.strategies.map((strategy) => `
+      <div class="legend-row">
+        <span class="legend-swatch" style="background:${strategy.color}"></span>
+        <span>${strategy.label}</span>
+        <strong>${Math.round(state.allocations[strategy.id])}% / ${formatMoney(strategy.investmentAmount)}</strong>
+      </div>
+    `).join("");
+  }
+
+  function drawCashFlowChart(model) {
+    const ctx = cashFlowCanvas.getContext("2d");
+    const rect = cashFlowCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(520, Math.floor(rect.width || 900));
+    const height = Math.max(300, Math.floor(rect.height || 390));
+    cashFlowCanvas.width = width * dpr;
+    cashFlowCanvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const series = [
+      ...model.strategies.map((strategy) => ({
+        label: strategy.label,
+        color: strategy.color,
+        values: strategy.cumulative,
+      })),
+      {
+        label: "Portfolio Total",
+        color: model.portfolio.color,
+        values: model.portfolio.cumulative,
+      },
+    ];
+
+    const allValues = series.flatMap((item) => item.values);
+    const minValue = Math.min(0, ...allValues);
+    const maxValue = Math.max(0, ...allValues);
+    const rangePadding = Math.max((maxValue - minValue) * 0.12, 100000);
+    const yMin = minValue - rangePadding;
+    const yMax = maxValue + rangePadding;
+    const padding = { top: 22, right: 30, bottom: 48, left: 76 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    function xAt(index) {
+      return padding.left + (chartWidth / (MONTHS - 1)) * index;
+    }
+
+    function yAt(value) {
+      const span = yMax - yMin || 1;
+      return padding.top + chartHeight - ((value - yMin) / span) * chartHeight;
+    }
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#e8ebef";
+    ctx.fillStyle = "#757b84";
+    ctx.font = "12px Inter, sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i += 1) {
+      const value = yMin + ((yMax - yMin) / gridLines) * i;
+      const y = yAt(value);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
+      ctx.stroke();
+      ctx.fillText(formatMoney(value), padding.left - 10, y);
+    }
+
+    const zeroY = yAt(0);
+    ctx.beginPath();
+    ctx.moveTo(padding.left, zeroY);
+    ctx.lineTo(width - padding.right, zeroY);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#b9bec6";
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "#757b84";
+    [1, 6, 12, 18, 24].forEach((month) => {
+      ctx.fillText(`M${month}`, xAt(month - 1), height - padding.bottom + 18);
+    });
+
+    series.forEach((item, index) => {
+      drawLine(
+        ctx,
+        item.values.map((value, valueIndex) => [xAt(valueIndex), yAt(value)]),
+        item.color,
+        index === series.length - 1 ? 3.6 : 2.2,
+      );
+    });
+
+    drawChartLegend(ctx, width, series);
+  }
+
+  function drawLine(ctx, points, color, lineWidth) {
+    ctx.save();
+    ctx.beginPath();
+    points.forEach(([x, y], index) => {
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+
+    [0, 11, 23].forEach((index) => {
+      const [x, y] = points[index];
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawChartLegend(ctx, width, series) {
+    const startX = Math.max(86, width - 610);
+    let x = startX;
+    const y = 18;
+    ctx.font = "700 12px Inter, sans-serif";
+    ctx.textBaseline = "top";
+
+    series.forEach((item) => {
+      ctx.fillStyle = item.color;
+      ctx.fillRect(x, y + 4, 18, 4);
+      ctx.fillStyle = "#51565e";
+      ctx.fillText(item.label, x + 26, y);
+      x += item.label.length * 7 + 66;
+    });
+  }
+
+  function render() {
+    syncAllocationControls();
+    const model = calculateModel();
+    updateStrategyMetrics(model);
+    updateKpis(model);
+    updateTable(model);
+    drawDonut(model);
+    drawCashFlowChart(model);
+  }
+
+  document.querySelectorAll("[data-allocation]").forEach((input) => {
+    input.addEventListener("input", (event) => {
+      balanceAllocations(event.target.dataset.allocation, Number(event.target.value));
+      render();
+    });
+  });
+
+  document.querySelectorAll("input[type='number']:not([disabled])").forEach((input) => {
+    input.addEventListener("input", render);
+  });
+
+  document.querySelector("#resetButton").addEventListener("click", () => {
+    totalInvestmentInput.value = DEFAULTS.totalInvestment;
+    state.allocations = { ...DEFAULTS.allocations };
+
+    Object.entries(DEFAULTS.strategyInputs).forEach(([strategyId, fields]) => {
+      Object.entries(fields).forEach(([field, value]) => {
+        const input = document.querySelector(`[data-strategy-input="${strategyId}"][data-field="${field}"]`);
+        if (input) input.value = value;
+      });
+    });
+
+    render();
+  });
+
+  window.addEventListener("resize", () => {
+    window.requestAnimationFrame(render);
+  });
+
+  render();
+</script>
+</body>
+</html>
