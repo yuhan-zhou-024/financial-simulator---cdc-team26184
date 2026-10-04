@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cafe de Coral - Financial Impact Simulator</title>
+
+<style>
+  :root {
+    --ink: #171717;
+    --muted: #63666a;
+    --subtle: #8a8f98;
+    --line: #e3e6ea;
+    --paper: #ffffff;
+    --wash: #f5f7fa;
+    --wash-strong: #eef2f6;
+    --black: #171717;
+    --red: #d84a3a;
+    --amber: #e7a83b;
+    --teal: #2f9d8f;
+    --blue: #466db4;
+    --green: #5f9f4a;
+    --shadow: 0 12px 34px rgba(19, 25, 32, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--wash);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      linear-gradient(180deg, #ffffff 0, #f6f7f9 330px),
+      var(--wash);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  .container {
+    width: min(1450px, 100%);
+    margin: 0 auto;
+    padding: 32px 28px 72px;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+
+  .brand-block {
+    min-width: 0;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 9px;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .eyebrow::before {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    content: "";
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 4vw, 38px);
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  .subtitle {
+    max-width: 720px;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .reset-button {
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 8px;
+    background: var(--black);
+    color: white;
+    padding: 11px 18px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .reset-button:hover {
+    opacity: 0.86;
+  }
+
+  .reset-button:active {
+    transform: translateY(1px);
+  }
+
+  .dashboard-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .section {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .section-number {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--black);
+    color: white;
+    font-weight: 800;
+  }
+
+  .section-title {
+    font-size: 21px;
+    font-weight: 800;
+  }
+
+  .section-description {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 3px;
+    line-height: 1.45;
+  }
+
+  .investment-total {
+    display: grid;
+    grid-template-columns: 1fr minmax(180px, 250px);
+    align-items: end;
+    gap: 22px;
+    margin-bottom: 22px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--wash);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .input-group label,
+  .investment-total label {
+    display: block;
+    margin-bottom: 7px;
+    color: #404348;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .input-hint {
+    margin-top: 6px;
+    color: var(--subtle);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #d4d9df;
+    border-radius: 8px;
+    background: white;
+    color: var(--ink);
+    font-size: 15px;
+    outline: none;
+    transition: border 140ms ease, box-shadow 140ms ease;
+  }
+
+  input[type="number"]:focus {
+    border-color: #2f6fbd;
+    box-shadow: 0 0 0 3px rgba(47, 111, 189, 0.12);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--slider-color, var(--black));
+  }
+
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .strategy-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: #fff;
+  }
+
+  .strategy-card[data-strategy="digital"] {
+    --slider-color: var(--red);
+  }
+
+  .strategy-card[data-strategy="menu"] {
+    --slider-color: var(--amber);
+  }
+
+  .strategy-card[data-strategy="operations"] {
+    --slider-color: var(--teal);
+  }
+
+  .strategy-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .strategy-heading h3 {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .allocation-value {
+    flex: 0 0 auto;
+    min-width: 56px;
+    text-align: right;
+    color: var(--slider-color);
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .metric-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .mini-metric {
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--wash);
+  }
+
+  .mini-metric span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .mini-metric strong {
+    font-size: 16px;
+  }
+
+  .allocation-summary {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) 1fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  .donut-panel,
+  .chart-panel {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .donut-panel {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 18px;
+  }
+
+  .panel-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .donut-wrap {
+    position: relative;
+    min-height: 300px;
+    display: grid;
+    place-items: center;
+  }
+
+  .donut-wrap canvas {
+    width: min(270px, 100%);
+    max-width: 100%;
+    aspect-ratio: 1;
+  }
+
+  .donut-center {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .donut-center strong {
+    display: block;
+    font-size: 25px;
+  }
+
+  .donut-center span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .legend {
+    display: grid;
+    gap: 10px;
+    align-self: end;
+  }
+
+  .legend-row {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .summary-panel {
+    min-width: 0;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .kpi {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 17px;
+    background: white;
+  }
+
+  .kpi-label {
+    min-height: 34px;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .kpi-value {
+    overflow-wrap: anywhere;
+    font-size: clamp(22px, 2.4vw, 29px);
+    line-height: 1;
+    font-weight: 850;
+  }
+
+  .kpi-value.good {
+    color: var(--green);
+  }
+
+  .kpi-value.warn {
+    color: var(--amber);
+  }
+
+  .kpi-note {
+    margin-top: 8px;
+    color: var(--subtle);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .chart-panel {
+    padding: 18px;
+  }
+
+  .chart-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .chart-toggle {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--wash);
+    overflow: hidden;
+  }
+
+  .chart-toggle button {
+    min-width: 92px;
+    border: 0;
+    background: transparent;
+    padding: 8px 12px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .chart-toggle button.is-active {
+    background: var(--black);
+    color: white;
+  }
+
+  .chart-container {
+    height: 360px;
+    min-height: 280px;
+  }
+
+  .chart-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  .financial-table th,
+  .financial-table td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #eceff2;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .financial-table th:first-child,
+  .financial-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: white;
+    text-align: left;
+  }
+
+  .financial-table th {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .financial-table td {
+    font-size: 14px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .table-wrap .financial-table {
+    margin-top: 0;
+  }
+
+  .positive {
+    color: var(--green);
+    font-weight: 800;
+  }
+
+  .negative {
+    color: var(--red);
+    font-weight: 800;
+  }
+
+  .note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid #eadca8;
+    border-radius: 8px;
+    background: #fff8e7;
+    color: #765b16;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 1180px) {
+    .allocation-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .donut-panel {
+      grid-template-columns: minmax(230px, 330px) 1fr;
+      grid-template-rows: auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .panel-title {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 1020px) {
+    .strategy-grid,
+    .field-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .container {
+      padding: 22px 14px 54px;
+    }
+
+    .top-bar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .reset-button {
+      width: 100%;
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section-header {
+      align-items: flex-start;
+    }
+
+    .investment-total,
+    .strategy-grid,
+    .field-row,
+    .donut-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .chart-toggle {
+      width: 100%;
+    }
+
+    .chart-toggle button {
+      min-width: 0;
+    }
+
+    .financial-table th,
+    .financial-table td {
+      padding: 12px 10px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div class="brand-block">
+        <p class="eyebrow">Cafe de Coral</p>
+        <h1>Financial Impact Simulator</h1>
+        <p class="subtitle">
+          Model how investment allocation across digital growth, menu innovation, and store operations could change revenue, operating profit, ROI, and payback over three years.
+        </p>
+      </div>
+      <button class="reset-button" type="button" id="resetButton">Reset assumptions</button>
+    </div>
+
+    <div class="dashboard-shell">
+      <section class="section" aria-labelledby="section-assumptions">
+        <div class="section-header">
+          <div class="section-number">1</div>
+          <div>
+            <div class="section-title" id="section-assumptions">Baseline Assumptions</div>
+            <div class="section-description">All figures are illustrative and denominated in HKD millions unless noted.</div>
+          </div>
+        </div>
+
+        <div class="investment-total">
+          <div>
+            <label for="totalInvestment">Total investment</label>
+            <input id="totalInvestment" type="number" min="0" step="5" value="120" />
+            <div class="input-hint">Allocated across the three initiatives below.</div>
+          </div>
+          <div>
+            <label for="taxRate">Tax rate (%)</label>
+            <input id="taxRate" type="number" min="0" max="50" step="0.1" value="16.5" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="input-group">
+            <label for="baseRevenue">Current revenue</label>
+            <input id="baseRevenue" type="number" min="0" step="50" value="8680" />
+          </div>
+          <div class="input-group">
+            <label for="baseMargin">Operating margin (%)</label>
+            <input id="baseMargin" type="number" min="-20" max="50" step="0.1" value="6.6" />
+          </div>
+          <div class="input-group">
+            <label for="baseGrowth">Baseline growth (%)</label>
+            <input id="baseGrowth" type="number" min="-20" max="40" step="0.1" value="1.5" />
+          </div>
+          <div class="input-group">
+            <label for="contributionMargin">Contribution margin (%)</label>
+            <input id="contributionMargin" type="number" min="0" max="80" step="0.5" value="18" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-allocation">
+        <div class="section-header">
+          <div class="section-number">2</div>
+          <div>
+            <div class="section-title" id="section-allocation">Investment Allocation</div>
+            <div class="section-description">Strategy percentages auto-balance to 100%.</div>
+          </div>
+        </div>
+
+        <div class="strategy-grid">
+          <article class="strategy-card" data-strategy="digital">
+            <div class="strategy-heading">
+              <h3>Digital ordering and loyalty</h3>
+              <div class="allocation-value" data-allocation-label="digital">40%</div>
+            </div>
+            <div class="input-group">
+              <label for="digitalAllocation">Allocation</label>
+              <input id="digitalAllocation" data-allocation="digital" type="range" min="0" max="100" step="1" value="40" />
+            </div>
+            <div class="input-group">
+              <label for="digitalRev">Revenue uplift per HK$10m (%)</label>
+              <input id="digitalRev" data-strategy-input="digital" data-field="revLift" type="number" min="0" step="0.01" value="0.16" />
+            </div>
+            <div class="input-group">
+              <label for="digitalProfit">Annual profit benefit per HK$10m</label>
+              <input id="digitalProfit" data-strategy-input="digital" data-field="profitBenefit" type="number" min="0" step="0.1" value="0.9" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Capital</span>
+                <strong data-capital="digital">HK$48m</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Y3 EBIT impact</span>
+                <strong data-impact="digital">HK$0m</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="strategy-card" data-strategy="menu">
+            <div class="strategy-heading">
+              <h3>Menu, pricing, and product mix</h3>
+              <div class="allocation-value" data-allocation-label="menu">35%</div>
+            </div>
+            <div class="input-group">
+              <label for="menuAllocation">Allocation</label>
+              <input id="menuAllocation" data-allocation="menu" type="range" min="0" max="100" step="1" value="35" />
+            </div>
+            <div class="input-group">
+              <label for="menuRev">Revenue uplift per HK$10m (%)</label>
+              <input id="menuRev" data-strategy-input="menu" data-field="revLift" type="number" min="0" step="0.01" value="0.11" />
+            </div>
+            <div class="input-group">
+              <label for="menuProfit">Annual profit benefit per HK$10m</label>
+              <input id="menuProfit" data-strategy-input="menu" data-field="profitBenefit" type="number" min="0" step="0.1" value="0.45" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Capital</span>
+                <strong data-capital="menu">HK$42m</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Y3 EBIT impact</span>
+                <strong data-impact="menu">HK$0m</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="strategy-card" data-strategy="operations">
+            <div class="strategy-heading">
+              <h3>Store automation and network efficiency</h3>
+              <div class="allocation-value" data-allocation-label="operations">25%</div>
+            </div>
+            <div class="input-group">
+              <label for="operationsAllocation">Allocation</label>
+              <input id="operationsAllocation" data-allocation="operations" type="range" min="0" max="100" step="1" value="25" />
+            </div>
+            <div class="input-group">
+              <label for="operationsRev">Revenue uplift per HK$10m (%)</label>
+              <input id="operationsRev" data-strategy-input="operations" data-field="revLift" type="number" min="0" step="0.01" value="0.04" />
+            </div>
+            <div class="input-group">
+              <label for="operationsProfit">Annual profit benefit per HK$10m</label>
+              <input id="operationsProfit" data-strategy-input="operations" data-field="profitBenefit" type="number" min="0" step="0.1" value="1.8" />
+            </div>
+            <div class="metric-strip">
+              <div class="mini-metric">
+                <span>Capital</span>
+                <strong data-capital="operations">HK$30m</strong>
+              </div>
+              <div class="mini-metric">
+                <span>Y3 EBIT impact</span>
+                <strong data-impact="operations">HK$0m</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-results">
+        <div class="section-header">
+          <div class="section-number">3</div>
+          <div>
+            <div class="section-title" id="section-results">Projected Impact</div>
+            <div class="section-description">Scenario values include baseline growth, incremental sales, recurring profit benefit, and tax impact.</div>
+          </div>
+        </div>
+
+        <div class="allocation-summary">
+          <aside class="donut-panel" aria-label="Allocation summary">
+            <h2 class="panel-title">Allocation mix</h2>
+            <div class="donut-wrap">
+              <canvas id="donutChart" width="360" height="360" aria-label="Investment allocation donut chart"></canvas>
+              <div class="donut-center">
+                <strong id="donutTotal">HK$120m</strong>
+                <span>Investment</span>
+              </div>
+            </div>
+            <div class="legend" id="allocationLegend"></div>
+          </aside>
+
+          <div class="summary-panel">
+            <div class="kpi-grid">
+              <div class="kpi">
+                <div class="kpi-label">Year 3 revenue uplift</div>
+                <div class="kpi-value good" id="kpiRevenue">HK$0m</div>
+                <div class="kpi-note" id="kpiRevenueNote">0.0% vs baseline</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Year 3 EBIT impact</div>
+                <div class="kpi-value good" id="kpiProfit">HK$0m</div>
+                <div class="kpi-note" id="kpiMarginNote">0 bps margin change</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">Three-year net profit impact</div>
+                <div class="kpi-value good" id="kpiNetProfit">HK$0m</div>
+                <div class="kpi-note" id="kpiTaxNote">After tax</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">ROI and payback</div>
+                <div class="kpi-value" id="kpiRoi">0%</div>
+                <div class="kpi-note" id="kpiPayback">Payback: n/a</div>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <div class="chart-toolbar">
+                <h2 class="panel-title">Financial trajectory</h2>
+                <div class="chart-toggle" aria-label="Chart metric">
+                  <button class="is-active" type="button" data-chart-mode="revenue">Revenue</button>
+                  <button type="button" data-chart-mode="profit">EBIT</button>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="trendChart" width="900" height="420" aria-label="Three year financial impact chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="section-table">
+        <div class="section-header">
+          <div class="section-number">4</div>
+          <div>
+            <div class="section-title" id="section-table">Financial Output</div>
+            <div class="section-description">Baseline and scenario comparison by year.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="financial-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Year 1</th>
+                <th>Year 2</th>
+                <th>Year 3</th>
+              </tr>
+            </thead>
+            <tbody id="financialTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          This simulator is an illustrative management model, not official company guidance. Adjust baseline and efficiency assumptions to match the source data used in your analysis.
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  const STRATEGIES = [
+    { id: "digital", label: "Digital and loyalty", color: "#d84a3a", ramp: [0.35, 0.72, 1] },
+    { id: "menu", label: "Menu and mix", color: "#e7a83b", ramp: [0.42, 0.76, 1] },
+    { id: "operations", label: "Operations", color: "#2f9d8f", ramp: [0.3, 0.68, 1] },
+  ];
+
+  const DEFAULTS = {
+    totalInvestment: 120,
+    taxRate: 16.5,
+    baseRevenue: 8680,
+    baseMargin: 6.6,
+    baseGrowth: 1.5,
+    contributionMargin: 18,
+    allocations: { digital: 40, menu: 35, operations: 25 },
+    strategyInputs: {
+      digital: { revLift: 0.16, profitBenefit: 0.9 },
+      menu: { revLift: 0.11, profitBenefit: 0.45 },
+      operations: { revLift: 0.04, profitBenefit: 1.8 },
+    },
+  };
+
+  const state = {
+    chartMode: "revenue",
+    allocations: { ...DEFAULTS.allocations },
+  };
+
+  const currency = new Intl.NumberFormat("en-HK", {
+    maximumFractionDigits: 0,
+  });
+
+  const oneDecimal = new Intl.NumberFormat("en-HK", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+
+  const inputs = {
+    totalInvestment: document.querySelector("#totalInvestment"),
+    taxRate: document.querySelector("#taxRate"),
+    baseRevenue: document.querySelector("#baseRevenue"),
+    baseMargin: document.querySelector("#baseMargin"),
+    baseGrowth: document.querySelector("#baseGrowth"),
+    contributionMargin: document.querySelector("#contributionMargin"),
+  };
+
+  const donutCanvas = document.querySelector("#donutChart");
+  const trendCanvas = document.querySelector("#trendChart");
+
+  function getNumber(id) {
+    const value = Number(inputs[id].value);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function getStrategyInput(strategyId, field) {
+    const element = document.querySelector(`[data-strategy-input="${strategyId}"][data-field="${field}"]`);
+    const value = Number(element?.value);
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  function formatMoney(value) {
+    const sign = value < 0 ? "-" : "";
+    return `${sign}HK$${currency.format(Math.abs(value))}m`;
+  }
+
+  function formatPercent(value) {
+    return `${oneDecimal.format(value)}%`;
+  }
+
+  function syncAllocationControls() {
+    STRATEGIES.forEach((strategy) => {
+      const value = Math.round(state.allocations[strategy.id]);
+      document.querySelector(`[data-allocation="${strategy.id}"]`).value = value;
+      document.querySelector(`[data-allocation-label="${strategy.id}"]`).textContent = `${value}%`;
+    });
+  }
+
+  function balanceAllocations(changedId, nextValue) {
+    const previousValue = state.allocations[changedId];
+    const clampedValue = Math.max(0, Math.min(100, Math.round(nextValue)));
+    const delta = clampedValue - previousValue;
+    state.allocations[changedId] = clampedValue;
+
+    const others = STRATEGIES.filter((strategy) => strategy.id !== changedId).map((strategy) => strategy.id);
+    if (delta > 0) {
+      let remainingDelta = delta;
+      const totalAvailable = others.reduce((sum, id) => sum + state.allocations[id], 0);
+      others.forEach((id, index) => {
+        const last = index === others.length - 1;
+        const reduction = last ? remainingDelta : Math.round(delta * (state.allocations[id] / Math.max(totalAvailable, 1)));
+        const applied = Math.min(state.allocations[id], reduction);
+        state.allocations[id] -= applied;
+        remainingDelta -= applied;
+      });
+    } else if (delta < 0) {
+      let remainingGain = Math.abs(delta);
+      const capacityTotal = others.reduce((sum, id) => sum + (100 - state.allocations[id]), 0);
+      others.forEach((id, index) => {
+        const last = index === others.length - 1;
+        const addition = last ? remainingGain : Math.round(Math.abs(delta) * ((100 - state.allocations[id]) / Math.max(capacityTotal, 1)));
+        const applied = Math.min(100 - state.allocations[id], addition);
+        state.allocations[id] += applied;
+        remainingGain -= applied;
+      });
+    }
+
+    normalizeAllocations();
+  }
+
+  function normalizeAllocations() {
+    let total = STRATEGIES.reduce((sum, strategy) => sum + state.allocations[strategy.id], 0);
+    if (total === 100) return;
+
+    const target = STRATEGIES.find((strategy) => state.allocations[strategy.id] + (100 - total) >= 0) || STRATEGIES[0];
+    state.allocations[target.id] += 100 - total;
+  }
+
+  function calculateModel() {
+    const totalInvestment = Math.max(0, getNumber("totalInvestment"));
+    const baseRevenue = Math.max(0, getNumber("baseRevenue"));
+    const baseMargin = getNumber("baseMargin") / 100;
+    const baseGrowth = getNumber("baseGrowth") / 100;
+    const contributionMargin = getNumber("contributionMargin") / 100;
+    const taxRate = Math.max(0, Math.min(60, getNumber("taxRate"))) / 100;
+    const years = [1, 2, 3];
+    const strategyResults = {};
+
+    STRATEGIES.forEach((strategy) => {
+      const allocation = state.allocations[strategy.id] / 100;
+      const capital = totalInvestment * allocation;
+      const revLiftPctPer10m = getStrategyInput(strategy.id, "revLift") / 100;
+      const profitBenefitPer10m = getStrategyInput(strategy.id, "profitBenefit");
+
+      strategyResults[strategy.id] = {
+        capital,
+        yearly: years.map((year, index) => {
+          const baselineRevenue = baseRevenue * Math.pow(1 + baseGrowth, year);
+          const investmentUnits = capital / 10;
+          const ramp = strategy.ramp[index];
+          const incrementalRevenue = baselineRevenue * revLiftPctPer10m * investmentUnits * ramp;
+          const recurringBenefit = profitBenefitPer10m * investmentUnits * ramp;
+          const ebitImpact = incrementalRevenue * contributionMargin + recurringBenefit;
+          return { incrementalRevenue, recurringBenefit, ebitImpact };
+        }),
+      };
+    });
+
+    const yearly = years.map((year, index) => {
+      const baselineRevenue = baseRevenue * Math.pow(1 + baseGrowth, year);
+      const baselineEbit = baselineRevenue * baseMargin;
+      const incrementalRevenue = STRATEGIES.reduce((sum, strategy) => sum + strategyResults[strategy.id].yearly[index].incrementalRevenue, 0);
+      const ebitImpact = STRATEGIES.reduce((sum, strategy) => sum + strategyResults[strategy.id].yearly[index].ebitImpact, 0);
+      const scenarioRevenue = baselineRevenue + incrementalRevenue;
+      const scenarioEbit = baselineEbit + ebitImpact;
+      const taxAdjustedImpact = ebitImpact * (1 - taxRate);
+      return {
+        year,
+        baselineRevenue,
+        scenarioRevenue,
+        incrementalRevenue,
+        baselineEbit,
+        scenarioEbit,
+        ebitImpact,
+        baselineMargin: baselineRevenue === 0 ? 0 : baselineEbit / baselineRevenue,
+        scenarioMargin: scenarioRevenue === 0 ? 0 : scenarioEbit / scenarioRevenue,
+        taxAdjustedImpact,
+      };
+    });
+
+    const cumulativeNetProfit = yearly.reduce((sum, item) => sum + item.taxAdjustedImpact, 0);
+    const roi = totalInvestment === 0 ? 0 : (cumulativeNetProfit / totalInvestment) * 100;
+    const payback = calculatePayback(totalInvestment, yearly.map((item) => item.taxAdjustedImpact));
+
+    return {
+      totalInvestment,
+      strategyResults,
+      yearly,
+      cumulativeNetProfit,
+      roi,
+      payback,
+    };
+  }
+
+  function calculatePayback(investment, cashFlows) {
+    if (investment <= 0) return 0;
+    let recovered = 0;
+    for (let index = 0; index < cashFlows.length; index += 1) {
+      const cashFlow = cashFlows[index];
+      if (cashFlow <= 0) continue;
+      if (recovered + cashFlow >= investment) {
+        const partialYear = (investment - recovered) / cashFlow;
+        return index + partialYear + 1;
+      }
+      recovered += cashFlow;
+    }
+    return null;
+  }
+
+  function drawDonut(model) {
+    const ctx = donutCanvas.getContext("2d");
+    const rect = donutCanvas.getBoundingClientRect();
+    const size = Math.max(260, Math.floor(rect.width || 320));
+    const dpr = window.devicePixelRatio || 1;
+    donutCanvas.width = size * dpr;
+    donutCanvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+
+    const center = size / 2;
+    const radius = size * 0.39;
+    const lineWidth = size * 0.15;
+    let start = -Math.PI / 2;
+
+    STRATEGIES.forEach((strategy) => {
+      const portion = state.allocations[strategy.id] / 100;
+      const end = start + portion * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(center, center, radius, start, end);
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "butt";
+      ctx.strokeStyle = strategy.color;
+      ctx.stroke();
+      start = end;
+    });
+
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#e7eaef";
+    ctx.stroke();
+
+    document.querySelector("#donutTotal").textContent = formatMoney(model.totalInvestment);
+    document.querySelector("#allocationLegend").innerHTML = STRATEGIES.map((strategy) => {
+      const capital = model.strategyResults[strategy.id].capital;
+      return `
+        <div class="legend-row">
+          <span class="legend-swatch" style="background:${strategy.color}"></span>
+          <span>${strategy.label}</span>
+          <strong>${Math.round(state.allocations[strategy.id])}% / ${formatMoney(capital)}</strong>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function drawTrend(model) {
+    const ctx = trendCanvas.getContext("2d");
+    const rect = trendCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(500, Math.floor(rect.width || 900));
+    const height = Math.max(280, Math.floor(rect.height || 360));
+    trendCanvas.width = width * dpr;
+    trendCanvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const padding = { top: 24, right: 28, bottom: 45, left: 72 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    const metric = state.chartMode === "revenue" ? "Revenue" : "EBIT";
+    const baselineKey = state.chartMode === "revenue" ? "baselineRevenue" : "baselineEbit";
+    const scenarioKey = state.chartMode === "revenue" ? "scenarioRevenue" : "scenarioEbit";
+    const maxValue = Math.max(...model.yearly.flatMap((item) => [item[baselineKey], item[scenarioKey]])) * 1.08;
+    const minValue = Math.min(0, Math.min(...model.yearly.flatMap((item) => [item[baselineKey], item[scenarioKey]])) * 1.08);
+
+    function xAt(index) {
+      return padding.left + (chartWidth / 2) * index;
+    }
+
+    function yAt(value) {
+      const span = maxValue - minValue || 1;
+      return padding.top + chartHeight - ((value - minValue) / span) * chartHeight;
+    }
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#e8ebef";
+    ctx.fillStyle = "#757b84";
+    ctx.font = "12px Inter, sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+
+    const gridLines = 5;
+    for (let i = 0; i <= gridLines; i += 1) {
+      const value = minValue + ((maxValue - minValue) / gridLines) * i;
+      const y = yAt(value);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(width - padding.right, y);
+      ctx.stroke();
+      ctx.fillText(formatMoney(value).replace("HK$", "$"), padding.left - 10, y);
+    }
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    model.yearly.forEach((item, index) => {
+      ctx.fillText(`Year ${item.year}`, xAt(index), height - padding.bottom + 18);
+    });
+
+    drawLine(ctx, model.yearly.map((item, index) => [xAt(index), yAt(item[baselineKey])]), "#8a8f98", true);
+    drawLine(ctx, model.yearly.map((item, index) => [xAt(index), yAt(item[scenarioKey])]), state.chartMode === "revenue" ? "#466db4" : "#5f9f4a", false);
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.font = "700 12px Inter, sans-serif";
+    drawLegendItem(ctx, width - 210, 16, "#8a8f98", `Baseline ${metric}`);
+    drawLegendItem(ctx, width - 210, 38, state.chartMode === "revenue" ? "#466db4" : "#5f9f4a", `Scenario ${metric}`);
+  }
+
+  function drawLine(ctx, points, color, dashed) {
+    ctx.save();
+    ctx.beginPath();
+    points.forEach(([x, y], index) => {
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = color;
+    if (dashed) ctx.setLineDash([7, 7]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    points.forEach(([x, y]) => {
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawLegendItem(ctx, x, y, color, label) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y + 3, 20, 4);
+    ctx.fillStyle = "#51565e";
+    ctx.fillText(label, x + 30, y);
+  }
+
+  function updateKpis(model) {
+    const year3 = model.yearly[2];
+    const revenueUpliftPct = year3.baselineRevenue === 0 ? 0 : (year3.incrementalRevenue / year3.baselineRevenue) * 100;
+    const marginChangeBps = (year3.scenarioMargin - year3.baselineMargin) * 10000;
+
+    document.querySelector("#kpiRevenue").textContent = formatMoney(year3.incrementalRevenue);
+    document.querySelector("#kpiRevenueNote").textContent = `${formatPercent(revenueUpliftPct)} vs baseline`;
+    document.querySelector("#kpiProfit").textContent = formatMoney(year3.ebitImpact);
+    document.querySelector("#kpiProfit").classList.toggle("negative", year3.ebitImpact < 0);
+    document.querySelector("#kpiMarginNote").textContent = `${Math.round(marginChangeBps)} bps margin change`;
+    document.querySelector("#kpiNetProfit").textContent = formatMoney(model.cumulativeNetProfit);
+    document.querySelector("#kpiNetProfit").classList.toggle("negative", model.cumulativeNetProfit < 0);
+    document.querySelector("#kpiRoi").textContent = formatPercent(model.roi);
+    document.querySelector("#kpiRoi").classList.toggle("good", model.roi >= 100);
+    document.querySelector("#kpiRoi").classList.toggle("warn", model.roi > 0 && model.roi < 100);
+    document.querySelector("#kpiPayback").textContent = model.payback === null ? "Payback: beyond year 3" : `Payback: ${oneDecimal.format(model.payback)} years`;
+    document.querySelector("#kpiTaxNote").textContent = `Tax rate: ${formatPercent(getNumber("taxRate"))}`;
+  }
+
+  function updateStrategyMetrics(model) {
+    STRATEGIES.forEach((strategy) => {
+      const result = model.strategyResults[strategy.id];
+      const y3Impact = result.yearly[2].ebitImpact;
+      document.querySelector(`[data-capital="${strategy.id}"]`).textContent = formatMoney(result.capital);
+      document.querySelector(`[data-impact="${strategy.id}"]`).textContent = formatMoney(y3Impact);
+    });
+  }
+
+  function updateTable(model) {
+    const rows = [
+      ["Baseline revenue", ...model.yearly.map((item) => formatMoney(item.baselineRevenue))],
+      ["Scenario revenue", ...model.yearly.map((item) => formatMoney(item.scenarioRevenue))],
+      ["Incremental revenue", ...model.yearly.map((item) => valueCell(item.incrementalRevenue))],
+      ["Baseline EBIT", ...model.yearly.map((item) => formatMoney(item.baselineEbit))],
+      ["Scenario EBIT", ...model.yearly.map((item) => formatMoney(item.scenarioEbit))],
+      ["EBIT impact", ...model.yearly.map((item) => valueCell(item.ebitImpact))],
+      ["Scenario operating margin", ...model.yearly.map((item) => formatPercent(item.scenarioMargin * 100))],
+      ["After-tax profit impact", ...model.yearly.map((item) => valueCell(item.taxAdjustedImpact))],
+    ];
+
+    document.querySelector("#financialTableBody").innerHTML = rows.map(([label, ...values]) => `
+      <tr>
+        <td>${label}</td>
+        ${values.map((value) => `<td>${value}</td>`).join("")}
+      </tr>
+    `).join("");
+  }
+
+  function valueCell(value) {
+    const className = value < 0 ? "negative" : "positive";
+    return `<span class="${className}">${formatMoney(value)}</span>`;
+  }
+
+  function render() {
+    syncAllocationControls();
+    const model = calculateModel();
+    updateStrategyMetrics(model);
+    updateKpis(model);
+    updateTable(model);
+    drawDonut(model);
+    drawTrend(model);
+  }
+
+  document.querySelectorAll("[data-allocation]").forEach((input) => {
+    input.addEventListener("input", (event) => {
+      balanceAllocations(event.target.dataset.allocation, Number(event.target.value));
+      render();
+    });
+  });
+
+  document.querySelectorAll("input[type='number']").forEach((input) => {
+    input.addEventListener("input", render);
+  });
+
+  document.querySelectorAll("[data-chart-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.chartMode = button.dataset.chartMode;
+      document.querySelectorAll("[data-chart-mode]").forEach((item) => {
+        item.classList.toggle("is-active", item === button);
+      });
+      render();
+    });
+  });
+
+  document.querySelector("#resetButton").addEventListener("click", () => {
+    Object.entries(inputs).forEach(([id, input]) => {
+      input.value = DEFAULTS[id];
+    });
+    state.allocations = { ...DEFAULTS.allocations };
+    Object.entries(DEFAULTS.strategyInputs).forEach(([strategyId, fields]) => {
+      Object.entries(fields).forEach(([field, value]) => {
+        document.querySelector(`[data-strategy-input="${strategyId}"][data-field="${field}"]`).value = value;
+      });
+    });
+    state.chartMode = "revenue";
+    document.querySelectorAll("[data-chart-mode]").forEach((item) => {
+      item.classList.toggle("is-active", item.dataset.chartMode === "revenue");
+    });
+    render();
+  });
+
+  window.addEventListener("resize", () => {
+    window.requestAnimationFrame(render);
+  });
+
+  render();
+</script>
+</body>
+</html>
